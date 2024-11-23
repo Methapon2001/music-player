@@ -3,10 +3,11 @@ use std::fs::File;
 use crate::playback::controls::MediaControls;
 use crate::ui;
 
-use iced::widget::slider;
 use iced::{
-    time::Duration,
-    widget::{button, column, container, horizontal_space, row, text},
+    time,
+    widget::{
+        button, column, container, horizontal_space, row, slider, stack, text, vertical_space,
+    },
     Element, Subscription, Theme,
 };
 
@@ -49,7 +50,7 @@ impl MediaPlayer {
             }
             Message::Seek(position) => {
                 self.controls
-                    .seek(Duration::from_secs_f32(position))
+                    .seek(time::Duration::from_secs_f32(position))
                     .unwrap();
             }
         }
@@ -58,7 +59,7 @@ impl MediaPlayer {
     pub fn subscription(&self) -> Subscription<Message> {
         // NOTE: update view every 500 millisecond when music is playing.
         if !self.controls.is_paused() && !self.controls.is_empty() {
-            return iced::time::every(Duration::from_millis(500)).map(|_| Message::Tick);
+            return time::every(time::Duration::from_millis(500)).map(|_| Message::Tick);
         }
         return Subscription::none();
     }
@@ -67,21 +68,15 @@ impl MediaPlayer {
         let playback_info = &self.controls.playback_info;
         let playing = !self.controls.is_paused() && !self.controls.is_empty();
 
-        let action = row![
-            horizontal_space(),
-            button(if playing { "pause" } else { "play" })
-                .style(if playing {
-                    ui::button::danger
-                } else {
-                    ui::button::primary
-                })
-                .on_press(if playing {
-                    Message::Pause
-                } else {
-                    Message::Play
-                }),
-            horizontal_space()
-        ];
+        let action = if playing {
+            button("pause")
+                .style(ui::button::danger)
+                .on_press(Message::Pause)
+        } else {
+            button("play")
+                .style(ui::button::success)
+                .on_press(Message::Play)
+        };
 
         let stats = row![
             horizontal_space(),
