@@ -81,16 +81,17 @@ impl MediaPlayer {
         let stats = row![
             horizontal_space(),
             text(if self.controls.is_empty() {
-                format!("Current: --:-- / --:--")
+                format!("--:-- / --:--")
             } else {
                 format!(
-                    "Current - {:02}:{:02} / {:02}:{:02}",
+                    "{:02}:{:02} / {:02}:{:02}",
                     self.controls.get_pos().as_secs() / 60,
                     self.controls.get_pos().as_secs() % 60,
                     playback_info.total_duration.as_secs() / 60,
                     playback_info.total_duration.as_secs() % 60,
                 )
-            }),
+            })
+            .size(12),
             horizontal_space()
         ];
 
@@ -98,7 +99,12 @@ impl MediaPlayer {
             0.0..=playback_info.total_duration.as_secs_f32(),
             self.controls.get_pos().as_secs_f32(),
             Message::Seek,
-        );
+        )
+        .style(|theme, status| {
+            let mut styled_slider = slider::default(theme, status);
+            styled_slider.rail.border = styled_slider.rail.border.rounded(0);
+            styled_slider
+        });
 
         container(column![action, stats, seek].spacing(16))
             .padding(16)
