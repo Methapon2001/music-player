@@ -12,7 +12,6 @@ use iced::{
 };
 
 #[derive(Debug, Clone)]
-#[allow(dead_code)]
 pub enum Message {
     Tick,
     Play,
@@ -61,8 +60,8 @@ impl MediaPlayer {
     }
 
     pub fn subscription(&self) -> Subscription<Message> {
-        // NOTE: update view every 500 millisecond when music is playing.
         if !self.controls.is_paused() && !self.controls.is_empty() {
+            // NOTE: update view every 500 millisecond when music is playing.
             return time::every(time::Duration::from_millis(500)).map(|_| Message::Tick);
         }
         return Subscription::none();
