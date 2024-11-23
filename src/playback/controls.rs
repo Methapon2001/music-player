@@ -68,4 +68,18 @@ impl MediaControls {
     pub fn seek(&self, position: Duration) -> Result<(), SeekError> {
         self.sink.try_seek(position)
     }
+
+    pub fn get_volume(&self) -> f32 {
+        self.sink.volume()
+    }
+
+    pub fn set_volume(&self, volume: f32) {
+        // NOTE: Do not allow to raise volume more than 1.5x
+        match volume {
+            0.0..=1.5 => self.sink.set_volume(volume),
+            _ => {
+                // TODO: MediaControlsError
+            }
+        }
+    }
 }
