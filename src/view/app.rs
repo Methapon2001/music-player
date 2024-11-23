@@ -18,6 +18,7 @@ pub enum Message {
     Play,
     Pause,
     Seek(f32),
+    Volume(f32),
 }
 
 #[derive(Default)]
@@ -52,6 +53,9 @@ impl MediaPlayer {
                 self.controls
                     .seek(time::Duration::from_secs_f32(position))
                     .unwrap();
+            }
+            Message::Volume(volume) => {
+                self.controls.set_volume(volume);
             }
         }
     }
@@ -106,8 +110,36 @@ impl MediaPlayer {
             styled_slider
         });
 
-        container(column![action, stats, seek].spacing(16))
-            .padding(16)
-            .into()
+        let volume = slider(0.0..=1.5, self.controls.get_volume(), Message::Volume)
+            .step(0.1)
+            .width(72);
+
+        column![
+            container("Hello").padding(16).height(iced::Length::Fill),
+            stack![
+                column![
+                    vertical_space().height(10),
+                    container(
+                        row![action, volume, horizontal_space(), stats.width(92)]
+                            .align_y(iced::Center)
+                            .spacing(16)
+                            .padding(16)
+                    )
+                    .width(iced::Length::Fill)
+                    .style(|theme: &Theme| {
+                        let palette = theme.extended_palette();
+
+                        container::Style {
+                            background: Some(iced::Background::from(
+                                palette.background.strong.color.scale_alpha(0.03),
+                            )),
+                            ..Default::default()
+                        }
+                    })
+                ],
+                seek,
+            ],
+        ]
+        .into()
     }
 }
