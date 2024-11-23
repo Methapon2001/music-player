@@ -18,6 +18,7 @@ pub enum Message {
     Play,
     Pause,
     Seek(f32),
+    Volume(f32),
 }
 
 #[derive(Default)]
@@ -52,6 +53,9 @@ impl MediaPlayer {
                 self.controls
                     .seek(time::Duration::from_secs_f32(position))
                     .unwrap();
+            }
+            Message::Volume(volume) => {
+                self.controls.set_volume(volume);
             }
         }
     }
