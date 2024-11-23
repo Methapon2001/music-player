@@ -6,7 +6,8 @@ use crate::ui;
 use iced::{
     time,
     widget::{
-        button, column, container, horizontal_space, row, slider, stack, text, vertical_space,
+        button, column, container, horizontal_space, row, slider, stack, text, text_input,
+        vertical_space,
     },
     Element, Subscription, Theme,
 };
@@ -18,11 +19,13 @@ pub enum Message {
     Pause,
     Seek(f32),
     Volume(f32),
+    Input(String),
 }
 
 #[derive(Default)]
 pub struct MediaPlayer {
     controls: MediaControls,
+    input: String,
 }
 
 impl MediaPlayer {
@@ -39,7 +42,7 @@ impl MediaPlayer {
             Message::Tick => {}
             Message::Play => {
                 if self.controls.is_empty() {
-                    let file = File::open("").unwrap();
+                    let file = File::open(&self.input).unwrap();
                     self.controls.append(file).unwrap();
                 } else {
                     self.controls.play();
@@ -55,6 +58,9 @@ impl MediaPlayer {
             }
             Message::Volume(volume) => {
                 self.controls.set_volume(volume);
+            }
+            Message::Input(text) => {
+                self.input = text;
             }
         }
     }
@@ -114,7 +120,9 @@ impl MediaPlayer {
             .width(72);
 
         column![
-            container("Hello").padding(16).height(iced::Length::Fill),
+            container(text_input("Music file...", &self.input).on_input(Message::Input))
+                .padding(16)
+                .height(iced::Length::Fill),
             stack![
                 column![
                     vertical_space().height(10),
