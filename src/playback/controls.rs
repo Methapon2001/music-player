@@ -65,6 +65,10 @@ impl MediaControls {
         self.sink.pause();
     }
 
+    pub fn stop(&self) {
+        self.sink.clear();
+    }
+
     pub fn seek(&self, position: Duration) -> Result<(), SeekError> {
         self.sink.try_seek(position)
     }

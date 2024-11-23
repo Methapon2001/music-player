@@ -17,6 +17,7 @@ pub enum Message {
     Tick,
     Play,
     Pause,
+    Stop,
     Seek(f32),
     Volume(f32),
     Input(String),
@@ -44,12 +45,14 @@ impl MediaPlayer {
                 if self.controls.is_empty() {
                     let file = File::open(&self.input).unwrap();
                     self.controls.append(file).unwrap();
-                } else {
-                    self.controls.play();
                 }
+                self.controls.play();
             }
             Message::Pause => {
                 self.controls.pause();
+            }
+            Message::Stop => {
+                self.controls.stop();
             }
             Message::Seek(position) => {
                 self.controls
@@ -77,15 +80,19 @@ impl MediaPlayer {
         let playback_info = &self.controls.playback_info;
         let playing = !self.controls.is_paused() && !self.controls.is_empty();
 
-        let action = if playing {
+        let toggle_button = if playing {
             button("pause")
-                .style(ui::button::danger)
+                .style(ui::button::primary)
                 .on_press(Message::Pause)
         } else {
             button("play")
                 .style(ui::button::success)
                 .on_press(Message::Play)
         };
+
+        let stop_button = button("stop")
+            .style(ui::button::danger)
+            .on_press(Message::Stop);
 
         let stats = row![
             horizontal_space(),
@@ -127,10 +134,16 @@ impl MediaPlayer {
                 column![
                     vertical_space().height(10),
                     container(
-                        row![action, volume, horizontal_space(), stats.width(92)]
-                            .align_y(iced::Center)
-                            .spacing(16)
-                            .padding(16)
+                        row![
+                            toggle_button,
+                            stop_button,
+                            volume,
+                            horizontal_space(),
+                            stats.width(92)
+                        ]
+                        .align_y(iced::Center)
+                        .spacing(16)
+                        .padding(16)
                     )
                     .width(iced::Length::Fill)
                     .style(|theme: &Theme| {
