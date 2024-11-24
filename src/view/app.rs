@@ -80,19 +80,14 @@ impl MediaPlayer {
         let playback_info = &self.controls.playback_info;
         let playing = !self.controls.is_paused() && !self.controls.is_empty();
 
-        let toggle_button = if playing {
-            button("pause")
-                .style(ui::button::primary)
-                .on_press(Message::Pause)
-        } else {
-            button("play")
-                .style(ui::button::success)
-                .on_press(Message::Play)
-        };
-
-        let stop_button = button("stop")
-            .style(ui::button::danger)
-            .on_press(Message::Stop);
+        let mut play_button = button("play").style(ui::button::success);
+        let mut pause_button = button("pause").style(ui::button::primary);
+        let mut stop_button = button("stop").style(ui::button::danger);
+        if !self.controls.is_empty() {
+            play_button = play_button.on_press(Message::Play);
+            pause_button = pause_button.on_press(Message::Pause);
+            stop_button = stop_button.on_press(Message::Stop);
+        }
 
         let stats = row![
             horizontal_space(),
