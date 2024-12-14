@@ -8,11 +8,19 @@ publish = false
 lofty = { version = "0.21.1" }
 mpris = { version = "2.0.1" }
 
+[dependencies.rfd]
+version = "0.15.1"
+
 [dependencies.rodio]
 version = "0.20.1"
-features = ["symphonia-flac", "symphonia-mp3", "symphonia-wav", "symphonia"]
+features = [
+  "symphonia-wav",
+  "symphonia-vorbis",
+  "symphonia-mp3",
+  "symphonia-flac",
+]
 default-features = false
 
 [dependencies.iced]
 version = "0.13.1"
-features = ["smol", "image"]
+features = ["async-std", "image"]
