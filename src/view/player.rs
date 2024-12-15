@@ -10,7 +10,6 @@ use iced::{
     },
     Element, Subscription, Task, Theme,
 };
-
 use rfd::FileHandle;
 
 #[derive(Debug, Clone)]
@@ -73,7 +72,7 @@ impl MediaPlayer {
             MediaPlayerMessage::FileDialogOpen => Task::perform(
                 async {
                     rfd::AsyncFileDialog::new()
-                        .set_directory("/")
+                        .add_filter("Music", &["wav", "flac", "ogg", "mp3"])
                         .pick_file()
                         .await
                 },
@@ -88,19 +87,20 @@ impl MediaPlayer {
 
     pub fn subscription(&self) -> Subscription<MediaPlayerMessage> {
         if !self.controls.is_paused() && !self.controls.is_empty() {
-            // NOTE: update view every 500 millisecond when music is playing.
-            return time::every(time::Duration::from_millis(100)).map(|_| MediaPlayerMessage::Tick);
+            // NOTE: update view every 100 millisecond when music is playing.
+            time::every(time::Duration::from_millis(100)).map(|_| MediaPlayerMessage::Tick)
+        } else {
+            Subscription::none()
         }
-        return Subscription::none();
     }
 
     pub fn view(&self) -> Element<MediaPlayerMessage> {
         let playback_info = &self.controls.playback_info;
         let playing = !self.controls.is_paused() && !self.controls.is_empty();
 
-        let mut play_button = button("play").style(ui::button::success);
-        let mut pause_button = button("pause").style(ui::button::primary);
-        let mut stop_button = button("stop").style(ui::button::danger);
+        let mut play_button = button("Play").style(ui::button::success);
+        let mut pause_button = button("Pause").style(ui::button::primary);
+        let mut stop_button = button("Stop").style(ui::button::danger);
 
         if self.controls.is_empty() && self.file_handle.is_some() {
             play_button = play_button.on_press(MediaPlayerMessage::Play);
@@ -110,22 +110,18 @@ impl MediaPlayer {
             stop_button = stop_button.on_press(MediaPlayerMessage::Stop);
         }
 
-        let stats = row![
-            horizontal_space(),
-            text(if self.controls.is_empty() {
-                format!("--:-- / --:--")
-            } else {
-                format!(
-                    "{:02}:{:02} / {:02}:{:02}",
-                    self.controls.get_pos().as_secs() / 60,
-                    self.controls.get_pos().as_secs() % 60,
-                    playback_info.total_duration.as_secs() / 60,
-                    playback_info.total_duration.as_secs() % 60,
-                )
-            })
-            .size(12),
-            horizontal_space()
-        ];
+        let stats = text(if self.controls.is_empty() {
+            format!("--:-- / --:--")
+        } else {
+            format!(
+                "{:02}:{:02} / {:02}:{:02}",
+                self.controls.get_pos().as_secs() / 60,
+                self.controls.get_pos().as_secs() % 60,
+                playback_info.total_duration.as_secs() / 60,
+                playback_info.total_duration.as_secs() % 60,
+            )
+        })
+        .size(12);
 
         let seek = slider(
             0.0..=playback_info.total_duration.as_secs_f32(),
@@ -144,63 +140,57 @@ impl MediaPlayer {
             MediaPlayerMessage::Volume,
         )
         .step(0.1)
-        .width(72);
+        .width(100);
 
-        let gui = column![
-            container(
-                row![
-                    button("Pick File")
-                        .on_press(MediaPlayerMessage::FileDialogOpen)
-                        .style(ui::button::primary),
-                    text(
-                        self.file_handle
-                            .as_ref()
-                            .map_or("No file selected", |handle| {
-                                let path = handle.path();
+        let content = container(
+            row![
+                button("Pick File")
+                    .on_press(MediaPlayerMessage::FileDialogOpen)
+                    .style(ui::button::primary),
+                text(
+                    self.file_handle
+                        .as_ref()
+                        .map(|handle| handle.path().to_str().unwrap())
+                        .unwrap_or("No file selected")
+                )
+            ]
+            .align_y(iced::Center)
+            .spacing(5),
+        )
+        .padding(10)
+        .height(iced::Length::Fill);
 
-                                if let Some(pathname) = path.to_str() {
-                                    pathname
-                                } else {
-                                    "No file selected"
-                                }
-                            })
-                    )
-                ]
-                .align_y(iced::Center)
-                .spacing(8)
-            )
-            .padding(16)
-            .height(iced::Length::Fill),
-            stack![
-                column![
-                    vertical_space().height(10),
-                    container(
-                        row![
-                            if playing { pause_button } else { play_button },
-                            stop_button,
-                            volume,
-                            horizontal_space(),
-                            stats.width(92)
-                        ]
-                        .align_y(iced::Center)
-                        .spacing(8)
-                        .padding(16)
-                    )
-                    .width(iced::Length::Fill)
-                    .style(|theme: &Theme| {
-                        let palette = theme.extended_palette();
+        let controls = stack![
+            column![
+                vertical_space().height(10),
+                container(
+                    row![
+                        if playing { pause_button } else { play_button },
+                        stop_button,
+                        volume,
+                        horizontal_space(),
+                        stats
+                    ]
+                    .align_y(iced::Center)
+                    .spacing(5)
+                    .padding(10)
+                )
+                .width(iced::Length::Fill)
+                .style(|theme: &Theme| {
+                    let palette = theme.extended_palette();
 
-                        container::Style {
-                            background: Some(iced::Background::from(
-                                palette.background.strong.color.scale_alpha(0.03),
-                            )),
-                            ..Default::default()
-                        }
-                    })
-                ],
-                seek,
+                    container::Style {
+                        background: Some(iced::Background::from(
+                            palette.background.strong.color.scale_alpha(0.03),
+                        )),
+                        ..Default::default()
+                    }
+                })
             ],
+            seek,
         ];
+
+        let gui = column![content, controls];
 
         gui.into()
     }
