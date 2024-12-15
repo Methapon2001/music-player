@@ -102,7 +102,7 @@ impl MediaPlayer {
         let mut pause_button = button("Pause").style(ui::button::primary);
         let mut stop_button = button("Stop").style(ui::button::danger);
 
-        if self.controls.is_empty() && self.file_handle.is_some() {
+        if self.file_handle.is_some() || self.controls.is_paused() {
             play_button = play_button.on_press(MediaPlayerMessage::Play);
         }
         if !self.controls.is_empty() {
@@ -172,7 +172,7 @@ impl MediaPlayer {
                         stats
                     ]
                     .align_y(iced::Center)
-                    .spacing(5)
+                    .spacing(10)
                     .padding(10)
                 )
                 .width(iced::Length::Fill)
