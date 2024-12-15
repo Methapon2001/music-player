@@ -1,9 +1,6 @@
 use std::{fs::File, time::Duration};
 
-use rodio::{
-    decoder::DecoderError, source::SeekError, Decoder, OutputStream, OutputStreamHandle, Sink,
-    Source,
-};
+use rodio::{decoder::DecoderError, source::SeekError, Decoder, OutputStream, Sink, Source};
 
 #[derive(Default)]
 pub struct PlaybackInfo {
@@ -14,8 +11,6 @@ pub struct MediaControls {
     sink: Sink,
     #[allow(dead_code)]
     stream: OutputStream,
-    #[allow(dead_code)]
-    stream_handle: OutputStreamHandle,
 
     pub playback_info: PlaybackInfo,
 }
@@ -26,7 +21,6 @@ impl Default for MediaControls {
         let sink = Sink::try_new(&stream_handle).unwrap();
 
         MediaControls {
-            stream_handle,
             stream,
             sink,
 
