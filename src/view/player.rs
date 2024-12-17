@@ -6,7 +6,8 @@ use crate::ui;
 use iced::{
     time,
     widget::{
-        button, column, container, horizontal_space, row, slider, stack, text, vertical_space,
+        button, column, container, horizontal_space, image, row, slider, stack, text,
+        vertical_space,
     },
     Element, Subscription, Task, Theme,
 };
@@ -31,6 +32,8 @@ pub struct MediaPlayer {
     controls: MediaControls,
 
     file_handle: Option<FileHandle>,
+
+    cover: Option<image::Handle>,
 }
 
 impl MediaPlayer {
@@ -134,6 +137,16 @@ impl MediaPlayer {
             styled_slider
         });
 
+        let cover = container(
+            self.cover
+                .as_ref()
+                .map_or(image("./fallback.png"), image)
+                .width(iced::Length::Fill)
+                .height(iced::Length::Fill)
+                .content_fit(iced::ContentFit::Contain),
+        )
+        .padding(20);
+
         let volume = slider(
             0.0..=1.5,
             self.controls.get_volume(),
@@ -157,8 +170,7 @@ impl MediaPlayer {
             .align_y(iced::Center)
             .spacing(5),
         )
-        .padding(10)
-        .height(iced::Length::Fill);
+        .padding(10);
 
         let controls = stack![
             column![
@@ -190,7 +202,7 @@ impl MediaPlayer {
             seek,
         ];
 
-        let gui = column![content, controls];
+        let gui = column![content, cover, controls].align_x(iced::Alignment::Center);
 
         gui.into()
     }
