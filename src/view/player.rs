@@ -148,7 +148,7 @@ impl MediaPlayer {
         .padding(20);
 
         let volume = slider(
-            0.0..=1.5,
+            0.0..=1.0,
             self.controls.get_volume(),
             MediaPlayerMessage::Volume,
         )
