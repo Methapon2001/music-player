@@ -89,6 +89,10 @@ impl MediaPlayer {
     }
 
     pub fn subscription(&self) -> Subscription<MediaPlayerMessage> {
+        Subscription::batch([self.subscription_tick()])
+    }
+
+    pub fn subscription_tick(&self) -> Subscription<MediaPlayerMessage> {
         if !self.controls.is_paused() && !self.controls.is_empty() {
             // NOTE: update view every 100 millisecond when music is playing.
             time::every(time::Duration::from_millis(100)).map(|_| MediaPlayerMessage::Tick)
