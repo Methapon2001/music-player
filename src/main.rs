@@ -58,6 +58,10 @@ impl Application {
                     .style(ui::button::primary)
                     .on_press(Message::MediaPlayerView),
             )
+            .width(iced::Fill)
+            .height(iced::Fill)
+            .align_x(iced::Center)
+            .align_y(iced::Center)
             .padding(10)
             .into(),
             View::MediaPlayer(view) => view.view().map(Message::MediaPlayerMessage),
