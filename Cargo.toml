@@ -5,7 +5,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
-lofty = { version = "0.21.1" }
+lofty = { version = "0.22.1" }
 mpris = { version = "2.0.1" }
 
 [dependencies.rfd]
