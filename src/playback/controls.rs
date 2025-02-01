@@ -75,9 +75,7 @@ impl MediaControls {
         // NOTE: Do not allow to raise volume more than 1.5x
         match volume {
             0.0..=1.5 => self.sink.set_volume(volume),
-            _ => {
-                // TODO: MediaControlsError
-            }
+            _ => self.sink.set_volume(1.5),
         }
     }
 }
