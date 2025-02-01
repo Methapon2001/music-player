@@ -11,6 +11,7 @@ use iced::{
     },
     Element, Subscription, Task, Theme,
 };
+use lofty::file::TaggedFileExt;
 use rfd::FileHandle;
 
 #[derive(Debug, Clone)]
@@ -24,15 +25,15 @@ pub enum MediaPlayerMessage {
     Volume(f32),
 
     FileDialogOpen,
-    FileDialogSelect(Option<FileHandle>),
+    FileDialogHandle(Option<FileHandle>),
+
+    ImageHandle(Option<image::Handle>),
 }
 
 #[derive(Default)]
 pub struct MediaPlayer {
     controls: MediaControls,
-
     file_handle: Option<FileHandle>,
-
     cover: Option<image::Handle>,
 }
 
@@ -79,10 +80,29 @@ impl MediaPlayer {
                         .pick_file()
                         .await
                 },
-                MediaPlayerMessage::FileDialogSelect,
+                MediaPlayerMessage::FileDialogHandle,
             ),
-            MediaPlayerMessage::FileDialogSelect(handle) => {
-                self.file_handle = handle;
+            MediaPlayerMessage::FileDialogHandle(handle) => {
+                self.file_handle = handle.to_owned();
+
+                Task::perform(
+                    async {
+                        if let Some(file_handle) = handle {
+                            let tagged_file = lofty::read_from_path(file_handle.path()).unwrap();
+
+                            tagged_file.primary_tag().map(|tag| {
+                                let pic = tag.pictures().first().unwrap().data();
+                                image::Handle::from_bytes(pic.to_owned())
+                            })
+                        } else {
+                            None
+                        }
+                    },
+                    MediaPlayerMessage::ImageHandle,
+                )
+            }
+            MediaPlayerMessage::ImageHandle(image_handle) => {
+                self.cover = image_handle;
                 Task::none()
             }
         }
@@ -145,7 +165,6 @@ impl MediaPlayer {
             self.cover
                 .as_ref()
                 .map_or(image("./fallback.png"), image)
-                .width(iced::Length::Fill)
                 .height(iced::Length::Fill)
                 .content_fit(iced::ContentFit::Contain),
         )
