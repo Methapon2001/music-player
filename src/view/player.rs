@@ -74,12 +74,9 @@ impl MediaPlayer {
 
             // NOTE: update state
             MediaPlayerMessage::FileDialogOpen => Task::perform(
-                async {
-                    rfd::AsyncFileDialog::new()
-                        .add_filter("Music", &["wav", "flac", "ogg", "mp3"])
-                        .pick_file()
-                        .await
-                },
+                rfd::AsyncFileDialog::new()
+                    .add_filter("Music", &["wav", "flac", "ogg", "mp3"])
+                    .pick_file(),
                 MediaPlayerMessage::FileDialogHandle,
             ),
             MediaPlayerMessage::FileDialogHandle(handle) => {
