@@ -90,6 +90,7 @@ impl MediaPlayer {
                 }
                 self.controls.play();
 
+                // NOTE: just to prevent blocking
                 Task::perform(
                     async {
                         if let Some(file_handle) = handle {
@@ -166,6 +167,7 @@ impl MediaPlayer {
             styled_slider
         });
 
+        // FIXME: image render is blocking
         let cover = container(
             self.cover
                 .as_ref()
