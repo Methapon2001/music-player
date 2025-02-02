@@ -82,6 +82,14 @@ impl MediaPlayer {
             MediaPlayerMessage::FileDialogHandle(handle) => {
                 self.file_handle = handle.to_owned();
 
+                // NOTE: Instantly play selected file
+                if let Some(file_handle) = &self.file_handle {
+                    let file = File::open(file_handle.path()).unwrap();
+                    self.controls.stop();
+                    self.controls.append(file).unwrap();
+                }
+                self.controls.play();
+
                 Task::perform(
                     async {
                         if let Some(file_handle) = handle {
