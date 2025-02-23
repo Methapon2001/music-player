@@ -2086,6 +2086,7 @@ dependencies = [
  "mpris",
  "rfd",
  "rodio",
+ "xdg-home",
 ]
 
 [[package]]
