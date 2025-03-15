@@ -96,13 +96,12 @@ impl MediaPlayer {
                         if let Some(file_handle) = handle {
                             let tagged_file = lofty::read_from_path(file_handle.path()).unwrap();
 
-                            tagged_file.primary_tag().map(|tag| {
+                            return tagged_file.primary_tag().map(|tag| {
                                 let pic = tag.pictures().first().unwrap().data();
                                 image::Handle::from_bytes(pic.to_owned())
-                            })
-                        } else {
-                            None
+                            });
                         }
+                        None
                     },
                     MediaPlayerMessage::ImageHandle,
                 )
@@ -144,7 +143,7 @@ impl MediaPlayer {
         }
 
         let stats = text(if self.controls.is_empty() {
-            format!("--:-- / --:--")
+            "--:-- / --:--".to_string()
         } else {
             format!(
                 "{:02}:{:02} / {:02}:{:02}",
